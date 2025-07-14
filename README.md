@@ -1,7 +1,7 @@
 <hr>
 
 # Stage Size Changer
-### [🟩 Download userscript](https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.user.js)
+### [🟩 Install userscript](#installization)
 
 <hr>
 
@@ -23,5 +23,9 @@ The userscript adds:
 
 > [!WARNING]
 > Userscript is currently in alpha release and may be unstable!
+
+## Installization:
+1. Install the userscript manager (for example [Tampermonkey](https://www.tampermonkey.net/))
+2. Install userscript
 
 [^1]: Scratch is a project of the Scratch Foundation. It is available for free at https://scratch.org/
