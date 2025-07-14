@@ -8,8 +8,8 @@
 // @grant       none
 // @run-at      document-start
 // @namespace   stageSizeChanger
-// @downloadURL https://raw.githubusercontent.com/DDen4ik-12/data-files/refs/heads/main/stageSizeChanger.user.js
-// @updateURL   https://raw.githubusercontent.com/DDen4ik-12/data-files/refs/heads/main/stageSizeChanger.user.js
+// @downloadURL https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.user.js
+// @updateURL   https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.user.js
 // ==/UserScript==
 (async () => {
   // Query list
