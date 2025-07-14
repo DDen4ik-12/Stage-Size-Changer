@@ -1,5 +1,5 @@
 # Stage Size Changer
-![GitHub Release](https://img.shields.io/github/v/release/DDen4ik-12/Stage-Size-Changer?label=%E2%84%B9%20Latest%20release) ![GitHub Repo stars](https://img.shields.io/github/stars/DDen4ik-12/Stage-Size-Changer?style=flat&label=%E2%AD%90%20Stars) [🟩 Install userscript](#installization)
+![GitHub Release](https://img.shields.io/github/v/release/DDen4ik-12/Stage-Size-Changer?label=%E2%84%B9%20Latest%20release) ![GitHub file size in bytes](https://img.shields.io/github/size/DDen4ik-12/Stage-Size-Changer/stageSizeChanger.user.js?branch=v1.0-alpha.9&label=%E2%84%B9%20Size) ![GitHub Repo stars](https://img.shields.io/github/stars/DDen4ik-12/Stage-Size-Changer?style=flat&label=%E2%AD%90%20Stars&color=yellow) [🟩 Install userscript](#installization)
 
 "Stage Size Changer" is a userscript for the Scratch[^1] website that allows you to change the stage size from 480×360 to something else
 
