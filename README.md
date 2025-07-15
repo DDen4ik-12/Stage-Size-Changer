@@ -22,9 +22,9 @@
 `have "Stage Size Changer"?`, `stage width`, `stage height`, `set stage size width: () height: ()`
 
 ## 📦 Installization:
-1. Install the userscript manager (for example [Tampermonkey](https://www.tampermonkey.net/))
+1. Install the userscript manager like [Tampermonkey](https://www.tampermonkey.net/)
 2. Install userscript from:
-    * [Direct link (latest)](https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.user.js)
+    * [Direct link (latest release)](https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.user.js)
     * [Releases](https://github.com/DDen4ik-12/Stage-Size-Changer/releases)
 
 [^1]: Scratch is a project of the Scratch Foundation. It is available for free at https://scratch.org/
