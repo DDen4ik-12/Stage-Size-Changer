@@ -1,0 +1,19 @@
+{
+  "name": "stage-size-changer",
+  "version": "1.0-beta.1",
+  "description": "Userscript for the Scratch website that allows you to resize the scene.",
+  "author": "Den4ik-12",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "webpack"
+  },
+  "dependencies": {
+    "url-loader": "^4.1.1",
+    "webpack": "^5.100.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-userscript": "^3.2.3"
+  }
+}
