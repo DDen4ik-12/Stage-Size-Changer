@@ -1,12 +1,11 @@
-import { getStageWrapperState } from "../instances.js";
 import { overrideFunction, defined } from "../utils/utils.js";
 
 export default (
+  reduxStore,
   vm,
   mousePosLabel,
   monitorsDivUpdate,
   updatePlayerSize,
-  setInstances,
 ) => {
   // Add new stage size props and methods and override existing stage size props
   vm.runtime.stageWidth = 480;
@@ -17,13 +16,16 @@ export default (
     if (vm.runtime.stageWidth !== width || vm.runtime.stageHeight !== height) {
       mousePosLabel.style.width = `${0.625 * 0.55 * (width.toString().length + height.toString().length + 4)}rem`;
 
-      const deltaX = width - vm.runtime.stageWidth,
-        deltaY = height - vm.runtime.stageHeight;
-
       if (vm.runtime._monitorState.size > 0) {
-        const offsetX = deltaX / 2,
-          offsetY = deltaY / 2;
+        const offsetX = (width - vm.runtime.stageWidth) / 2,
+          offsetY = (height - vm.runtime.stageHeight) / 2;
         for (const monitor of vm.runtime._monitorState.valueSeq()) {
+          reduxStore.dispatch({
+            type: "scratch-gui/monitors/MOVE_MONITOR_RECT",
+            monitorId: monitor.get("id"),
+            newX: monitor.get("x") + offsetX,
+            newY: monitor.get("y") + offsetY,
+          });
           vm.runtime.requestUpdateMonitor(
             new Map([
               ["id", monitor.get("id")],
@@ -48,10 +50,15 @@ export default (
         -height / 2,
         height / 2,
       );
+      updatePlayerSize(
+        width,
+        height,
+        reduxStore.getState().scratchGui.stageSize.stageSize,
+      );
       vm.renderer.resize(width, height);
+      window.dispatchEvent(new Event("resize"));
       vm.runtime.emit("STAGE_SIZE_CHANGED", width, height);
       vm.emit("STAGE_SIZE_CHANGED", width, height);
-      window.dispatchEvent(new Event("resize"));
 
       if (
         defined(vm.renderer._allSkins[penSkinId]?.constructor) &&
@@ -84,29 +91,12 @@ export default (
     },
   });
 
-  // Override renderer resize
-  vm.renderer.resize = overrideFunction(
-    vm.renderer.resize,
-    (ogMethod, ...args) => {
-      ((x) => {
-        setInstances(x, x.props.stageSize);
-        updatePlayerSize(
-          vm.runtime.stageWidth,
-          vm.runtime.stageHeight,
-          x.props.stageSize,
-        );
-      })(getStageWrapperState());
-      ogMethod(...args);
-      window.dispatchEvent(new Event("resize"));
-    },
-  );
-
   // Override project save and load for handle monitors positions
   vm.toJSON = overrideFunction(vm.toJSON, (ogMethod, ...args) => {
     const result = JSON.parse(ogMethod(...args));
-    result.monitors.forEach((x) => {
-      x.x += (480 - vm.runtime.stageWidth) / 2;
-      x.y += (360 - vm.runtime.stageHeight) / 2;
+    result.monitors.forEach((monitor) => {
+      monitor.x += (480 - vm.runtime.stageWidth) / 2;
+      monitor.y += (360 - vm.runtime.stageHeight) / 2;
     });
     return JSON.stringify(result);
   });
@@ -114,19 +104,23 @@ export default (
     vm.deserializeProject,
     async (ogMethod, json, zip) => {
       const result = await ogMethod(json, zip);
+
+      const offsetX = (vm.runtime.stageWidth - 480) / 2,
+        offsetY = (vm.runtime.stageHeight - 360) / 2;
       for (const monitor of vm.runtime._monitorState.valueSeq()) {
         vm.runtime.requestUpdateMonitor(
           new Map([
             ["id", monitor.get("id")],
-            ["x", monitor.get("x") + (vm.runtime.stageWidth - 480) / 2],
-            ["y", monitor.get("y") + (vm.runtime.stageHeight - 360) / 2],
+            ["x", monitor.get("x") + offsetX],
+            ["y", monitor.get("y") + offsetY],
           ]),
         );
       }
       vm.runtime.emit("MONITORS_UPDATE", vm.runtime._monitorState);
-      const stageComments = json.targets.find((x) => x.isStage).comments;
+
+      const stageComments = json.targets.find((target) => target.isStage).comments;
       if (defined(stageComments)) {
-        const twConfigComment = Object.values(stageComments).find((x) => x.text.includes("// _twconfig_"));
+        const twConfigComment = Object.values(stageComments).find((comment) => comment.text.includes("// _twconfig_"));
         if (defined(twConfigComment)) {
           let twConfig;
           try {
@@ -145,27 +139,27 @@ export default (
   );
 
   // Override mouse position
-  vm.runtime.ioDevices.mouse._userscriptStageSizeChanger = { x: 0, y: 0 };
+  vm.runtime.ioDevices.mouse._usStageSc = { x: 0, y: 0 };
   Object.defineProperty(vm.runtime.ioDevices.mouse, "_scratchX", {
     set: function (set) {
-      this._userscriptStageSizeChanger.x = Math.round(
+      this._usStageSc.x = Math.round(
         set * (vm.runtime.stageWidth / 480),
       );
-      mousePosLabel.textContent = `${this._userscriptStageSizeChanger.x}, ${this._userscriptStageSizeChanger.y}`;
+      mousePosLabel.textContent = `${this._usStageSc.x}, ${this._usStageSc.y}`;
     },
     get: function () {
-      return this._userscriptStageSizeChanger.x;
+      return this._usStageSc.x;
     },
   });
   Object.defineProperty(vm.runtime.ioDevices.mouse, "_scratchY", {
     set: function (set) {
-      this._userscriptStageSizeChanger.y = Math.round(
+      this._usStageSc.y = Math.round(
         set * (vm.runtime.stageHeight / 360),
       );
-      mousePosLabel.textContent = `${this._userscriptStageSizeChanger.x}, ${this._userscriptStageSizeChanger.y}`;
+      mousePosLabel.textContent = `${this._usStageSc.x}, ${this._usStageSc.y}`;
     },
     get: function () {
-      return this._userscriptStageSizeChanger.y;
+      return this._usStageSc.y;
     },
   });
 };

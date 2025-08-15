@@ -1,8 +1,7 @@
 <div align="center"> 
 
 # Stage Size Changer
-[![Latest release](https://img.shields.io/github/v/release/DDen4ik-12/Stage-Size-Changer?label=%E2%84%B9%20Latest%20release)](https://github.com/DDen4ik-12/Stage-Size-Changer/releases)
-![Size of userscript](https://img.shields.io/github/size/DDen4ik-12/Stage-Size-Changer/stageSizeChanger.user.js?branch=v1.0-alpha.9&label=%E2%84%B9%20Size)
+[![Latest release](https://img.shields.io/github/v/release/DDen4ik-12/Stage-Size-Changer?label=%E2%84%B9%20Latest%20release)](https://github.com/DDen4ik-12/Stage-Size-Changer/releases/latest)
 [![GitHub repo stars](https://img.shields.io/github/stars/DDen4ik-12/Stage-Size-Changer?style=flat&label=%E2%AD%90%20Stars&color=yellow)](https://github.com/DDen4ik-12/Stage-Size-Changer/stargazers)
 [![Install userscript](https://img.shields.io/badge/%F0%9F%93%A6_Install_userscript-16c60c)](#-installization)
 
@@ -17,12 +16,20 @@
 > [!WARNING]
 > Userscript is currently in alpha release and may be unstable!
 
-### Example with 360×640 stage size:
-![Example with 360×640 stage size](./assets/readme/example.png)
+### Examples:
+| | |
+| --- | --- |
+| 360×640 stage size:[^2] | 640×480 stage size:[^3] |
+| ![Example 1](./assets/readme/example1.png) | ![Example 2](./assets/readme/example2.png) |
+| Embed with default stage size:[^4] |
+| ![Example 3](./assets/readme/example3.png) |
 
 ## ✨ Features:
 * VM patches related to adding the ability to resize the stage
-* A button in the stage controls to resize the stage
+* A button in the stage controls to open the settings:
+
+![StageSC settings](./assets/readme/settings.png)
+
 * A label in the stage controls that shows the position of the mouse cursor on the stage
 * Resizing the stage according to \_twconfig\_
 * New category "StageSC" ![StageSC category](./assets/readme/category.png) and blocks:
@@ -34,7 +41,10 @@
 ## 📦 Installization:
 1. Install the userscript manager like [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-00485b?logo=tampermonkey)](https://www.tampermonkey.net/)
 2. Install userscript from:
-    * [Direct link (latest release)](https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.user.js)
+    * [Direct link (latest release)](https://github.com/DDen4ik-12/Stage-Size-Changer/releases/latest/download/stageSizeChanger.user.js)
     * [Releases](https://github.com/DDen4ik-12/Stage-Size-Changer/releases)
 
 [^1]: Scratch is a project of the Scratch Foundation. It is available for free at https://scratch.org/
+[^2]: Project: [Jumper Remake](https://scratch.mit.edu/projects/1181696920) by \*me\*
+[^3]: Project: [Stage Size Detector](https://scratch.mit.edu/projects/588493413) by [TestMuffin](https://scratch.mit.edu/users/TestMuffin)
+[^4]: Project: [Random Idea Generator](https://scratch.mit.edu/projects/1108790117) by [Scratchteam](https://scratch.mit.edu/users/Scratchteam)

@@ -17,26 +17,37 @@ export default {
     rules: [
       {
         test: /\.(svg|png)$/,
-        loader: 'url-loader',
+        loader: "url-loader",
+      },
+      {
+        test: /\.(css)$/,
+        loader: "raw-loader",
       },
     ],
   },
   plugins: [
     new UserscriptPlugin({
       headers: {
-        name: "stageSizeChangerNew",
+        name: "stageSizeChanger",
         version: "1.0-beta.1",
         author: "Den4ik-12",
-        description: "Userscript for the Scratch website that allows you to resize the scene.",
+        description: "Userscript for the Scratch and Scratch Lab websites that allows you to change the stage size from 480×360 to something else",
         match: [
           "https://scratch.mit.edu/projects/*",
-          "https://lab.scratch.mit.edu/*",
+          "https://lab.scratch.mit.edu/*/*",
         ],
-        grant: "none",
+        grant: [
+          "GM_setValues",
+          "GM_getValues",
+          "GM_listValues",
+          "GM_getValue",
+          "GM_addValueChangeListener",
+          "unsafeWindow",
+        ],
         "run-at": "document-start",
-        namespace: "stageSizeChangerNew",
-        downloadURL: "https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.user.js",
-        updateURL: "https://raw.githubusercontent.com/DDen4ik-12/Stage-Size-Changer/refs/heads/main/stageSizeChanger.meta.js",
+        namespace: "stageSizeChanger",
+        downloadURL: "https://github.com/DDen4ik-12/Stage-Size-Changer/releases/latest/download/stageSizeChanger.user.js",
+        updateURL: "https://github.com/DDen4ik-12/Stage-Size-Changer/releases/latest/download/stageSizeChanger.meta.js",
       },
     }),
   ],

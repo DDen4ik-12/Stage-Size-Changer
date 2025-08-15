@@ -32,7 +32,7 @@ export default (vm) => {
     getNamesIdsDefaults = (blockData) => [
       blockData.args,
       blockData.args.map((_, i) => `arg${i}`),
-      blockData.args.map((_, i) => ""),
+      blockData.args.map(() => ""),
     ],
     generateUsBlocksXML = () => {
       let xml = "";
@@ -299,11 +299,11 @@ export default (vm) => {
         (ogMethod, target) => {
           const result = ogMethod(target);
           result.unshift({
-            id: "userscript-stage-size-changer",
+            id: "us-stage-sc",
             xml:
               "<category" +
               ' name="StageSC"' +
-              ` ${ScratchBlocks.registry ? "toolboxitemid" : "id"}="userscript-stage-size-changer"` +
+              ` ${ScratchBlocks.registry ? "toolboxitemid" : "id"}="us-stage-sc"` +
               ` colour="${getUsCategoryColor().primary}"` +
               ` secondaryColour="${getUsCategoryColor().tertiary}"` +
               ` iconURI="${icon}"` +

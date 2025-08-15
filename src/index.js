@@ -1,8 +1,8 @@
 import siteDifferences from "./siteDifferences.js";
 import applyPatches from "./patches/vm.js";
 import applyPatches4AddingBlks from "./patches/blocks.js";
-import { asyncQuerySelector, asyncQuerySelectorAll } from "./utils/asyncQuery.js"
-import { asyncGetStageWrapperState, getBlocksComponent } from "./instances.js";
+import { asyncQuerySelector } from "./utils/asyncQuery.js"
+import { getReduxStore, getBlocksComponent } from "./instances.js";
 import {
   resizePlayerStyle,
   updatePlayerSize,
@@ -10,6 +10,7 @@ import {
   mousePosLabel,
   spacer,
   openSettingsButton,
+  settingsInterface,
 } from "./elements.js";
 import { defined } from "./utils/utils.js";
 
@@ -35,28 +36,36 @@ import icon from "../assets/icon.svg";
     const monitorsDiv = document.querySelectorAll(
       'div[class^="monitor_monitor-container_"]',
     ),
-    monitorsInfo = monitorsStateClone.toArray().filter((x) => x.visible);
-    monitorsDiv.forEach((value, index) => {
-      value.style.transform = `translate(${monitorsInfo[index]?.x - value.style.left.match(/\d+/gs)[0]}px, ${monitorsInfo[index]?.y - value.style.top.match(/\d+/gs)[0]}px)`;
+    monitorsInfo = vm.runtime._monitorState.toArray().filter((monitor) => monitor.visible);
+    monitorsDiv.forEach((monitorDiv, i) => {
+      monitorDiv.style.transform = `translate(${monitorsInfo[i]?.x - monitorDiv.style.left.match(/\d+/gs)[0]}px, ${monitorsInfo[i]?.y - monitorDiv.style.top.match(/\d+/gs)[0]}px)`;
     });
   };
 
   // Get instances
-  top.userscriptStageSizeChanger = new Object();
-  let stageWrapperState = await asyncGetStageWrapperState(),
-    stageSizeMode = siteDifferences[location.host].pagesCheck.editor()
-      ? stageWrapperState.props.stageSize
-      : "large",
-    vm = stageWrapperState.props.vm,
+  unsafeWindow.usStageSc = new Object();
+  let reduxStore = await getReduxStore(),
+    vm = reduxStore.getState().scratchGui.vm,
     blocksComponent,
     ScratchBlocks;
-  if (siteDifferences[location.host].pagesCheck.editor()) {
+  if (!reduxStore.getState().scratchGui.mode.isPlayerOnly) {
     blocksComponent = await getBlocksComponent();
     ScratchBlocks = blocksComponent.ScratchBlocks;
   }
-  Object.assign(top.userscriptStageSizeChanger, { vm, blocksComponent, ScratchBlocks });
+  Object.assign(unsafeWindow.usStageSc, {
+    reduxStore,
+    vm,
+    blocksComponent,
+    ScratchBlocks,
+  });
 
-  // Add listeners to VM events
+  // Extract elements from functions
+  const spacerExtracted = spacer(),
+    mousePosLabelExtracted = mousePosLabel(),
+    settingsInterfaceExtracted = settingsInterface(reduxStore),
+    openSettingsButtonExtracted = openSettingsButton(vm, settingsInterfaceExtracted);
+
+  // Add stage size changing listener for replace search parameter "StageSC_size"
   vm.runtime.on("STAGE_SIZE_CHANGED", (width, height) => {
     const params = new URLSearchParams(location.search);
     if (width == 480 && height == 360) {
@@ -66,47 +75,111 @@ import icon from "../assets/icon.svg";
     }
     history.replaceState("", "", `?${params.toString()}`);
   });
-  let monitorsStateClone = vm.runtime._monitorState.map((x) => x);
-  vm.on("MONITORS_UPDATE", () => {
-    for (const monitor of vm.runtime._monitorState.valueSeq()) {
-      if (monitorsStateClone.size == 0) {
-        continue;
-      }
-      const monitorFromClone = monitorsStateClone.get(monitor.get("id"));
-      if (
-        defined(monitorFromClone) &&
-        monitorFromClone.get("visible") != monitor.get("visible") &&
-        (monitorFromClone.get("x") != monitor.get("x") ||
-          monitorFromClone.get("y") != monitor.get("y"))
-      ) {
-        vm.runtime.requestUpdateMonitor(
-          new Map([
-            ["id", monitor.get("id")],
-            ["x", monitorsStateClone.get(monitor.get("id")).get("x")],
-            ["y", monitorsStateClone.get(monitor.get("id")).get("y")],
-          ]),
-        );
-      }
+
+  // Add store state changing listener
+  let currentStateValues = new Object();
+  reduxStore.subscribe(async () => {
+    const state = reduxStore.getState(),
+      prevStateValues = currentStateValues;
+    currentStateValues = {
+      stageSizeMode: state.scratchGui.stageSize.stageSize,
+      isFullscreen: state.scratchGui.mode.isFullScreen,
+      isPlayerOnly: state.scratchGui.mode.isPlayerOnly,
+    };
+
+    if (currentStateValues.stageSizeMode != prevStateValues.stageSizeMode) {
+      updatePlayerSize(
+        vm.runtime.stageWidth,
+        vm.runtime.stageHeight,
+        currentStateValues.stageSizeMode,
+      );
+      vm.renderer.resize(
+        vm.runtime.stageWidth,
+        vm.runtime.stageHeight,
+      );
+      window.dispatchEvent(new Event("resize"));
     }
-    monitorsStateClone = vm.runtime._monitorState.map((x) => x);
-    monitorsDivUpdate();
+    if (
+      currentStateValues.isFullscreen != prevStateValues.isFullscreen ||
+      currentStateValues.isPlayerOnly != prevStateValues.isPlayerOnly
+    ) {
+      const params = new URLSearchParams(location.search);
+      if (vm.runtime.stageWidth == 480 && vm.runtime.stageHeight == 360) {
+        params.delete("StageSC_size");
+      } else {
+        params.set("StageSC_size", `${vm.runtime.stageWidth}x${vm.runtime.stageHeight}`);
+      }
+      history.replaceState("", "", `?${params.toString()}`);
+
+      if (!currentStateValues.isPlayerOnly) {
+        blocksComponent = await getBlocksComponent();
+        ScratchBlocks = blocksComponent.ScratchBlocks;
+        Object.assign(unsafeWindow.usStageSc, { blocksComponent, ScratchBlocks });
+        if (!toolboxPatchesApplied) {
+          toolboxPatchesApplied = true;
+          applyToolboxPatches(ScratchBlocks, blocksComponent);
+        }
+      }
+
+      (await asyncQuerySelector('div[class^="controls_controls-container_"]')).after(
+        spacerExtracted,
+      );
+      (await asyncQuerySelector('img[class^="stop-all_stop-all_"]')).after(
+        mousePosLabelExtracted,
+      );
+      await (async (advQuery) => {
+        let result = await asyncQuerySelector(advQuery.map((query) => query[0]).join(", "));
+        for (let advQueryI = 0; advQueryI < advQuery.length; advQueryI++) {
+          if (result != document.querySelector(advQuery[advQueryI][0])) {
+            continue;
+          }
+          for (let parentingCount = 0; parentingCount < advQuery[advQueryI][1]; parentingCount++) {
+            result = result.parentElement;
+          }
+          result.before(openSettingsButtonExtracted);
+          return;
+        }
+      })([
+        [
+          'div[class^="stage-header_stage-size-row_"] div > span[class^="button_outlined-button_"][role="button"]',
+          1,
+        ],
+        [
+          siteDifferences[location.host].inFullscreenButton.query,
+          siteDifferences[location.host].inFullscreenButton.parentI,
+        ],
+      ]);
+
+      updatePlayerSize(
+        vm.runtime.stageWidth,
+        vm.runtime.stageHeight,
+        reduxStore.getState().scratchGui.stageSize.stageSize,
+      );
+    }
   });
 
-  // Extract elements from functions
-  const spacerRaw = spacer(),
-    mousePosLabelRaw = mousePosLabel(),
-    openSettingsButtonRaw = openSettingsButton(vm);
+  // Add window resize listener for resizing monitor scaler in fullscreen
+  window.addEventListener("resize", () => {
+    if (reduxStore.getState().scratchGui.mode.isFullScreen) {
+      updatePlayerSize(
+        vm.runtime.stageWidth,
+        vm.runtime.stageHeight,
+        reduxStore.getState().scratchGui.stageSize.stageSize,
+      );
+      vm.renderer.resize(
+        vm.runtime.stageWidth,
+        vm.runtime.stageHeight,
+      );
+    }
+  });
 
   // Apply VM patches and patches for adding userscript's blocks
   applyPatches(
+    reduxStore,
     vm,
-    mousePosLabelRaw,
+    mousePosLabelExtracted,
     monitorsDivUpdate,
     updatePlayerSize,
-    (x1, x2) => {
-      stageWrapperState = x1;
-      stageSizeMode = x2;
-    },
   );
   const { addUserscriptBlock, applyToolboxPatches } = applyPatches4AddingBlks(vm);
 
@@ -159,23 +232,24 @@ import icon from "../assets/icon.svg";
     applyToolboxPatches(ScratchBlocks, blocksComponent);
   }
 
-  // Add elements to player controls
+  // Add elements
+  document.body.appendChild(settingsInterfaceExtracted);
   (await asyncQuerySelector('div[class^="controls_controls-container_"]')).after(
-    spacerRaw,
+    spacerExtracted,
   );
   (await asyncQuerySelector('img[class^="stop-all_stop-all_"]')).after(
-    mousePosLabelRaw,
+    mousePosLabelExtracted,
   );
-  await (async (x1) => {
-    let result = await asyncQuerySelector(x1.map((x2) => x2[0]).join(", "));
-    for (let i1 = 0; i1 < x1.length; i1++) {
-      if (result != document.querySelector(x1[i1][0])) {
+  await (async (advQuery) => {
+    let result = await asyncQuerySelector(advQuery.map((query) => query[0]).join(", "));
+    for (let advQueryI = 0; advQueryI < advQuery.length; advQueryI++) {
+      if (result != document.querySelector(advQuery[advQueryI][0])) {
         continue;
       }
-      for (let i2 = 0; i2 < x1[i1][1]; i2++) {
+      for (let parentingCount = 0; parentingCount < advQuery[advQueryI][1]; parentingCount++) {
         result = result.parentElement;
       }
-      result.before(openSettingsButtonRaw);
+      result.before(openSettingsButtonExtracted);
       return;
     }
   })([
@@ -193,147 +267,14 @@ import icon from "../assets/icon.svg";
   updatePlayerSize(
     vm.runtime.stageWidth,
     vm.runtime.stageHeight,
-    stageSizeMode,
+    reduxStore.getState().scratchGui.stageSize.stageSize,
   );
 
   // Handle search parameter "StageSC_size"
   if (/\d+x\d+/.test((new URL(location.href)).searchParams.get("StageSC_size"))) {
     const param = (new URL(location.href)).searchParams.get("StageSC_size");
-    vm.runtime.setStageSize(...param.match(/\d+/g).map((x) => parseInt(x)));
+    vm.runtime.setStageSize(...param.match(/\d+/g).map((number) => parseInt(number)));
   }
-
-  // Navigation
-  const funcOnClick = {
-    player: async () => {
-      await funcOnNavigate(undefined, "player");
-    },
-    editor: async () => {
-      await funcOnNavigate(undefined, "editor");
-    },
-    fullscreen: async () => {
-      await funcOnNavigate(undefined, "fullscreen");
-    },
-  };
-  const funcOnNavigate = async (
-    event,
-    page = siteDifferences[location.host]?.defaultPage,
-  ) => {
-    vm.runtime._monitorState =
-      monitorsStateClone.size > 0
-        ? monitorsStateClone.map((x) => x)
-        : vm.runtime._monitorState;
-
-    page =
-      page ??
-      siteDifferences[location.host].matchingPage(event.destination.url);
-    let intervalId;
-    await new Promise((resolve) => {
-      intervalId = setInterval(() => {
-        if (siteDifferences[location.host].pagesCheck[page]()) {
-          resolve();
-        }
-      });
-    });
-    clearInterval(intervalId);
-
-    /*const params = new URLSearchParams(location.search);
-    if (vm.runtime.stageWidth == 480 && vm.runtime.stageHeight == 360) {
-      params.delete("StageSC_size");
-    } else {
-      params.set("StageSC_size", `${vm.runtime.stageWidth}x${vm.runtime.stageHeight}`);
-    }
-    history.replaceState("", "", `?${params.toString()}`);*/
-
-    if (siteDifferences[location.host].pagesCheck.editor()) {
-      stageWrapperState = await asyncGetStageWrapperState();
-      stageSizeMode = stageWrapperState.props.stageSize;
-      blocksComponent = await getBlocksComponent();
-      ScratchBlocks = blocksComponent.ScratchBlocks;
-      Object.assign(top.userscriptStageSizeChanger, { blocksComponent, ScratchBlocks });
-      if (!toolboxPatchesApplied) {
-        toolboxPatchesApplied = true;
-        applyToolboxPatches(ScratchBlocks, blocksComponent);
-      }
-    }
-
-    (await asyncQuerySelector('div[class^="controls_controls-container_"]')).after(
-      spacerRaw,
-    );
-    (await asyncQuerySelector('img[class^="stop-all_stop-all_"]')).after(
-      mousePosLabelRaw,
-    );
-    await (async (x1) => {
-      let result = await asyncQuerySelector(x1.map((x2) => x2[0]).join(", "));
-      for (let i1 = 0; i1 < x1.length; i1++) {
-        if (result != document.querySelector(x1[i1][0])) {
-          continue;
-        }
-        for (let i2 = 0; i2 < x1[i1][1]; i2++) {
-          result = result.parentElement;
-        }
-        result.before(openSettingsButtonRaw);
-        return;
-      }
-    })([
-      [
-        'div[class^="stage-header_stage-size-row_"] div > span[class^="button_outlined-button_"][role="button"]',
-        1,
-      ],
-      [
-        siteDifferences[location.host].inFullscreenButton.query,
-        siteDifferences[location.host].inFullscreenButton.parentI,
-      ],
-    ]);
-    await (async (x1) => {
-      if (x1.length == 0) {
-        return;
-      }
-      let elements = await asyncQuerySelectorAll(
-        x1.map((x2) => x2[0]).join(", "),
-      );
-      for (let i1 = 0; i1 < x1.length; i1++) {
-        elements
-          .filter((x2) =>
-            [...document.querySelectorAll(x1[i1][0])].includes(x2),
-          )
-          .forEach((x2) => {
-            let parent = x2;
-            for (let i2 = 0; i2 < x1[i1][1]; i2++) {
-              parent = parent.parentElement;
-            }
-            parent.removeEventListener("click", funcOnClick[x1[i1][2]]);
-            parent.addEventListener("click", funcOnClick[x1[i1][2]]);
-          });
-      }
-    })(siteDifferences[location.host].addListenersTo);
-
-    monitorsDivUpdate();
-    updatePlayerSize(
-      vm.runtime.stageWidth,
-      vm.runtime.stageHeight,
-      stageSizeMode,
-    );
-  };
-  await (async (x1) => {
-    if (x1.length == 0) {
-      return;
-    }
-    let elements = await asyncQuerySelectorAll(
-      x1.map((x2) => x2[0]).join(", "),
-    );
-    for (let i1 = 0; i1 < x1.length; i1++) {
-      elements
-        .filter((x2) => [...document.querySelectorAll(x1[i1][0])].includes(x2))
-        .forEach((x2) => {
-          let parent = x2;
-          for (let i2 = 0; i2 < x1[i1][1]; i2++) {
-            parent = parent.parentElement;
-          }
-          parent.addEventListener("click", funcOnClick[x1[i1][2]]);
-        });
-    }
-  })(siteDifferences[location.host].addListenersTo);
-  navigation.addEventListener("navigate", funcOnNavigate);
 
   // Start log
   console.log(
