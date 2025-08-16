@@ -40,7 +40,7 @@
 
 ## 📦 Installization:
 1. Install the userscript manager like [![Tampermonkey](https://img.shields.io/badge/Tampermonkey-00485b?logo=tampermonkey)](https://www.tampermonkey.net/)
-2. Install userscript from:
+2. Install userscript (stageSizeChanger.**user**.js) from:
     * [Direct link (latest release)](https://github.com/DDen4ik-12/Stage-Size-Changer/releases/latest/download/stageSizeChanger.user.js)
     * [Releases](https://github.com/DDen4ik-12/Stage-Size-Changer/releases)
 
