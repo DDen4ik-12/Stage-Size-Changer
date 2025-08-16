@@ -10,11 +10,11 @@
 ---
 
 ## 🔎 About:
-"Stage Size Changer" is a userscript for the [![Scratch](https://img.shields.io/badge/Scratch-4d97ff?logo=scratch&logoColor=white)](https://scratch.org/)
+"Stage Size Changer" (or "StageSC") is a userscript for the [![Scratch](https://img.shields.io/badge/Scratch-4d97ff?logo=scratch&logoColor=white)](https://scratch.org/)
 [^1] and [![Scratch Lab](https://img.shields.io/badge/Scratch_Lab-4d97ff?logo=scratch&logoColor=white)](https://lab.scratch.mit.edu/) websites that allows you to change the stage size from 480×360 to something else
 
 > [!WARNING]
-> Userscript is currently in alpha release and may be unstable!
+> Userscript is currently in beta release and may have minor bugs!
 
 ### Examples:
 | | |
@@ -30,8 +30,8 @@
 
 ![StageSC settings](./assets/readme/settings.png)
 
-* A label in the stage controls that shows the position of the mouse cursor on the stage
-* Resizing the stage according to \_twconfig\_
+* Mouse postion display in the stage controls, which can be customized or disabled using the settings (an alternative to the "Mouse position display" addon from Scratch Addons, as it's not compatible with StageSC)
+* Resizing the stage according to TurboWarp's configuration (\_twconfig\_)
 * New category "StageSC" ![StageSC category](./assets/readme/category.png) and blocks:
 
 ![StageSC blocks](./assets/readme/blocks.png)
