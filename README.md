@@ -2,7 +2,8 @@
 
 # Stage Size Changer
 [![Latest release](https://img.shields.io/github/v/release/DDen4ik-12/Stage-Size-Changer?label=%E2%84%B9%20Latest%20release)](https://github.com/DDen4ik-12/Stage-Size-Changer/releases/latest)
-[![GitHub repo stars](https://img.shields.io/github/stars/DDen4ik-12/Stage-Size-Changer?style=flat&label=%E2%AD%90%20Stars&color=yellow)](https://github.com/DDen4ik-12/Stage-Size-Changer/stargazers)
+[![Installs of latest release](https://img.shields.io/github/downloads/DDen4ik-12/Stage-Size-Changer/latest/stageSizeChanger.user.js?label=%E2%84%B9%20Installs%40latest)](https://github.com/DDen4ik-12/Stage-Size-Changer/releases/latest)
+[![Repository stars](https://img.shields.io/github/stars/DDen4ik-12/Stage-Size-Changer?style=flat&label=%E2%AD%90%20Stars&color=yellow)](https://github.com/DDen4ik-12/Stage-Size-Changer/stargazers)
 [![Install userscript](https://img.shields.io/badge/%F0%9F%93%A6_Install_userscript-16c60c)](#-installization)
 
 </div>
