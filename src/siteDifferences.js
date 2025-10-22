@@ -10,7 +10,9 @@ const siteDifferences = {
     cardButton: "card_shrink-expand-button_mowrp",
     inFullscreenButton: {
       query:
-        'div[class^="stage-header_stage-menu-wrapper_"] > div[class^="stage-header_unselect-wrapper_"] > span[class^="button_outlined-button_"][role="button"], div[class^="stage-header_embed-scratch-logo_"] > a',
+        'div[class^="stage-header_stage-menu-wrapper_"] > div[class^="stage-header_rightSection_"] > span[class^="button_outlined-button_"][class*="stage-header_stage-button_"][role="button"],' +
+        'div[class^="stage-header_stage-menu-wrapper_"] > div[class^="stage-header_unselect-wrapper_"] > span[class^="button_outlined-button_"][role="button"],' +
+        'div[class^="stage-header_embed-scratch-logo_"] > a',
       parentI: 1,
     },
   },
